@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:p="http://www.springframework.org/schema/p" xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+       <context:property-placeholder location="classpath:db.properties, classpath:hibernate.properties" system-properties-mode="OVERRIDE"/>
+
+    <tx:annotation-driven/>
+
+       <bean id="dataSource" class="org.apache.tomcat.jdbc.pool.DataSource"
+             p:driverClassName="${db.driver}"
+             p:url="${db.url}"
+             p:username="${db.username}"
+             p:password="${db.password}"
+             p:removeAbandoned="true"
+             p:maxWait="20000"
+             p:testWhileIdle="true"
+             p:maxActive="10"
+             p:initialSize="2"
+                     />
+
+       <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean"
+             p:dataSource-ref="dataSource"
+             p:packagesToScan="${entitymanager.packages.to.scan}">
+           <property name="jpaPropertyMap">
+               <map>
+                   <entry key="#{T(org.hibernate.cfg.AvailableSettings).FORMAT_SQL}" value="${hibernate.show_sql}"/>
+                   <entry key="#{T(org.hibernate.cfg.AvailableSettings).USE_SQL_COMMENTS}" value="${hibernate.use_sql_comment}"/>
+                   <entry key="#{T(org.hibernate.cfg.AvailableSettings).DIALECT}" value="org.hibernate.dialect.MySQL5InnoDBDialect"/>
+               </map>
+           </property>
+             <property name="jpaVendorAdapter">
+                    <bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter"
+                          p:showSql="true"/>
+             </property>
+       </bean>
+
+       <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager"
+             p:entityManagerFactory-ref="entityManagerFactory"/>
+
+       <context:component-scan base-package="com.university.repository"/>
+
+</beans>
